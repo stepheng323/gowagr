@@ -1,0 +1,63 @@
+generator kysely {
+  provider     = "prisma-kysely"
+  output       = "../src/db"
+  fileName     = "types.ts"
+  enumFileName = "enums.ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(dbgenerated("gen_random_uuid()"))
+  email     String    @unique
+  password  String
+  username  String    @unique
+  Account   Account?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Account {
+  id                String        @id @default(dbgenerated("gen_random_uuid()"))
+  userId            String        @unique
+  balance           Decimal       @db.Decimal(10, 2)
+  User              User          @relation(fields: [userId], references: [id])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime?     @updatedAt
+  outgoingTransfers Transaction[] @relation("OutgoingTransfers")
+  incomingTransfers Transaction[] @relation("IncomingTransfers")
+}
+
+model Transaction {
+  id                String            @id @default(dbgenerated("gen_random_uuid()"))
+  senderAccountId   String
+  receiverAccountId String
+  type              TransactionType
+  status            TransactionStatus @default(pending)
+  reference         String            @default(dbgenerated("gen_random_uuid()"))
+  metadata          String?
+  amount            Decimal           @db.Decimal(10, 2)
+  balanceBefore     Decimal           @db.Decimal(10, 2)
+  balanceAfter      Decimal           @db.Decimal(10, 2)
+  note              String?
+
+  senderAccount   Account @relation("OutgoingTransfers", fields: [senderAccountId], references: [id])
+  receiverAccount Account @relation("IncomingTransfers", fields: [receiverAccountId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+enum TransactionType {
+  debit
+  credit
+}
+
+enum TransactionStatus {
+  pending
+  failed
+  successful
+}
