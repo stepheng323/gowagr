@@ -8,6 +8,5 @@ export interface IServiceHelper<T = any> {
     | 'forbidden'
     | 'not-found';
   message: string;
-  meta?: any;
   data?: T;
 }

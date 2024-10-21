@@ -44,14 +44,6 @@ export class UserRepo {
       .executeTakeFirst();
   }
 
-  async fetchUserDetailsWithBalance(userId: string) {
-    return this.client
-      .selectFrom('User')
-      .select([])
-      .where('User.id', '=', userId)
-      .executeTakeFirst();
-  }
-
   async getUserAccountByUsername(username: string) {
     return this.client
       .selectFrom('User')

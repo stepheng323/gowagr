@@ -11,13 +11,14 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  email     String    @unique
-  password  String
-  username  String    @unique
-  Account   Account?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  id          String        @id @default(dbgenerated("gen_random_uuid()"))
+  email       String        @unique
+  password    String
+  username    String        @unique
+  Account     Account?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  Transaction Transaction[]
 }
 
 model Account {
@@ -33,6 +34,7 @@ model Account {
 
 model Transaction {
   id                String            @id @default(dbgenerated("gen_random_uuid()"))
+  userId            String
   senderAccountId   String
   receiverAccountId String
   type              TransactionType
@@ -46,6 +48,7 @@ model Transaction {
 
   senderAccount   Account @relation("OutgoingTransfers", fields: [senderAccountId], references: [id])
   receiverAccount Account @relation("IncomingTransfers", fields: [receiverAccountId], references: [id])
+  user            User    @relation(fields: [userId], references: [id])
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt

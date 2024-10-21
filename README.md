@@ -1,85 +1,63 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Project README
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Welcome to our project! This project is designed to manage transactions and account balances for users. It includes features for creating accounts, debiting and crediting accounts, fetching transaction history, and initiating transfers between accounts.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technologies Used
 
-## Description
+* NestJS for the backend framework
+* Prisma for managing migrations and creating models
+* Kysely as a query builder for database operations, offering a more intuitive and type-safe approach to crafting and managing database queries.
+* Express is used as an adapter in the NestJS project
+* PostgreSQL for database storage
+* Redis for caching and session management
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+* Swagger for API documentation
 
-## Project setup
+## Project Structure
 
-```bash
-$ npm install
-```
+The project is structured into the following main directories:
 
-## Compile and run the project
+* `src`: This directory contains the source code for the project.
+	+ `repo`: This directory contains the repository classes for database operations.
+		- `account.repo.ts`: Handles account creation, debit, credit, and balance fetching operations.
+		- `transaction.repo.ts`: Handles transaction creation and fetching transaction history.
+	+ `user`: This directory contains the controller and service for handling user operations.
+		- `user.controller.ts`: Handles incoming user requests for creation, login, balance checking, and fetching user details by username.
+		- `user.service.ts`: Performs the actual user operations, including user creation, authentication, balance fetching, and user data retrieval by username.
+	+ `transfer`: This directory contains the controller and service for handling transfer operations.
+		- `transfer.controller.ts`: Handles incoming transfer requests and initiates the transfer process.
+		- `transfer.service.ts`: Performs the actual transfer operations, including account balance updates and transaction creation.
+	+ `utils`: This directory contains utility functions for pagination and response conversion.
 
-```bash
-# development
-$ npm run start
+## How to Use
 
-# watch mode
-$ npm run start:dev
 
-# production mode
-$ npm run start:prod
-```
+To use this project, follow these steps:
 
-## Run tests
+1. Clone the repository to your local machine.
+2. Install dependencies using `npm install`.
+3. Create a `.env` file in the project root and add the following environment variables:
+	* `DATABASE_URL`: The connection URL for your database.
+	* `JWT_SECRET`: A secret key for JSON Web Tokens.
+	* `JWT_EXPIRATION`: The expiration time for JSON Web Tokens.
+	* `PORT`: The port number for the application to listen on.
+	* `NODE_ENV`: The environment type (e.g., development, production).
 
-```bash
-# unit tests
-$ npm run test
+4. Start the application using `npm run start`.
+5. Use a tool like Postman or cURL to send HTTP requests to the API endpoints.
 
-# e2e tests
-$ npm run test:e2e
+## API Endpoints
 
-# test coverage
-$ npm run test:cov
-```
+The project includes the following API endpoints:
 
-## Resources
+* `POST /users`: Creates a new user account.
+* `POST /users/login`: Authenticates a user and returns a token.
+* `GET /users/balance`: Fetches the account balance for a user.
+* `GET /users/details`: Fetches user details by username.
+* `POST /transfers`: Initiates a transfer between two accounts.
+* `GET /transfers`: Fetches the transaction history for a user.
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is licensed under the MIT License.

@@ -9,5 +9,6 @@ export interface TransactionData {
   type: TransactionType;
   metadata?: string;
   note?: string;
+  userId: string;
 }
 

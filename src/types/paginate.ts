@@ -1,4 +1,4 @@
-import { TransactionStatus } from 'src/db/enums';
+import { TransactionStatus, TransactionType } from 'src/db/enums';
 
 export interface PaginationParams {
   page: number;
@@ -9,6 +9,7 @@ export interface PaginationParams {
 
 export interface TransactionQuery extends PaginationParams {
   status: TransactionStatus;
+  transactionType: TransactionType;
 }
 
 export interface PaginationResult<T> {

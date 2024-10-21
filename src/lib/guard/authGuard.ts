@@ -21,10 +21,10 @@ export class AuthGuard implements CanActivate {
       );
     }
     try {
-      const userData = jwt.verify(token, Env.SECRET_KEY);
-      console.log({ userData });
+      const userData = jwt.verify(token, Env.SECRET_KEY) as jwt.JwtPayload;
+      const { exp, iat, createdAt, updatedAt, ...user } = userData;
 
-      request['user'] = userData;
+      request['user'] = user;
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }

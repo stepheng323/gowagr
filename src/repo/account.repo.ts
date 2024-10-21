@@ -54,12 +54,12 @@ export class AccountRepo {
       .executeTakeFirst();
   }
 
-  async getAccountBalance(accountId: string, trx: Transaction<DB>) {
-    return trx
+  async getAccountBalanceByUserId(userId: string) {
+    return this.client
       .selectFrom('Account')
       .select('balance')
       .forUpdate()
-      .where('id', '=', accountId)
+      .where('userId', '=', userId)
       .executeTakeFirst();
   }
 }

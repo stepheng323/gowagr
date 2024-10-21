@@ -15,6 +15,7 @@ export type Account = {
 };
 export type Transaction = {
     id: Generated<string>;
+    userId: string;
     senderAccountId: string;
     receiverAccountId: string;
     type: TransactionType;

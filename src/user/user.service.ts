@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UserRepo } from 'src/repo/userRepo';
-import { IServiceHelper } from 'src/types';
+import { AuthUser, IServiceHelper } from 'src/types';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
@@ -23,14 +23,18 @@ export class UserService {
 
   async signup(userPayload: CreateUserDto): Promise<IServiceHelper> {
     const { email, password, username } = userPayload;
-    const existingUser = await this.userRepo.findByEmailOrUsername(
-      email,
-      username,
-    );
-    if (existingUser)
+    const existingUserByEmail = await this.userRepo.findByEmail(email);
+    if (existingUserByEmail)
       return {
         status: 'conflict',
-        message: 'Email or username already in use',
+        message: 'Email already in use',
+      };
+
+    const existingUserByUsername = await this.userRepo.findByUsername(username);
+    if (existingUserByUsername)
+      return {
+        status: 'conflict',
+        message: 'Username already in use',
       };
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -63,7 +67,7 @@ export class UserService {
     if (!user)
       return {
         status: 'bad-request',
-        message: `Invalid email or password`,
+        message: `Invalid email or password combination`,
       };
     const passwordMatch = await bcrypt.compare(payload.password, user.password);
     const cacheKey = `${payload.email}-login-retry`;
@@ -96,17 +100,24 @@ export class UserService {
     };
   }
 
-  async getUserDetailsWithBalance(userId: string): Promise<IServiceHelper> {
-    const userDetails = await this.userRepo.fetchUserDetailsWithBalance(userId);
-    if (!userDetails)
-      return {
-        status: 'not-found',
-        message: 'User details not found',
-      };
+  async getUserDetailsWithBalance(user: AuthUser): Promise<IServiceHelper> {
+    const cacheKey = `account-balance-${user.id}`;
+    let account = await this.cacheManager.get<{ balance: string }>(cacheKey);
+    if (!account) {
+      console.log('Cache miss');
+
+      account = await this.accountRepo.getAccountBalanceByUserId(user.id);
+      if (!account)
+        return {
+          status: 'not-found',
+          message: 'Could not fetch account balance please try again',
+        };
+      await this.cacheManager.set(cacheKey, account, 60000); // Cache balance for 1 minute
+    }
     return {
       status: 'successful',
-      message: 'User details fetched successfully',
-      data: userDetails,
+      message: 'User balance fetched successfully',
+      data: { ...user, ...account },
     };
   }
 

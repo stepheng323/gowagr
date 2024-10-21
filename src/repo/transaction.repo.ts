@@ -7,7 +7,7 @@ import { paginate } from 'src/utils/pagination';
 
 @Injectable()
 export class TransactionRepo {
-  constructor(private readonly client: KyselyService<DB>) {}
+  constructor(private readonly client: KyselyService<DB>) { }
 
   async create({
     payload,
@@ -32,23 +32,24 @@ export class TransactionRepo {
   async fetchTransactionHistory(userId: string, filter: TransactionQuery) {
     let query = this.client.selectFrom('Transaction').selectAll();
 
-    if (filter.status) {
-      query = query.where('Transaction.status', '=', filter.status);
-    }
-
-    if (filter.sortBy === 'amount') {
-      query = query.orderBy('Transaction.amount', filter.sortOrder);
-    }
+    query = query.where('userId', '=', userId);
 
     if (filter.status) {
       query = query.where('Transaction.status', '=', filter.status);
     }
-    // query.where('')
+
+    if (filter.sortBy === 'date') {
+      query = query.orderBy('Transaction.createdAt', filter.sortOrder);
+    }
+
+    if (filter.transactionType) {
+      query = query.where('Transaction.type', '=', filter.transactionType);
+    }
 
     return paginate<TransactionHistory>({
       queryBuilder: query,
       pagination: filter,
-      identifier: 'Order.id',
+      identifier: 'Transaction.id',
     });
   }
 }
