@@ -41,6 +41,13 @@ export class TransferService {
       transferDto.recieverUsername,
     );
 
+    if (transferDto.recieverUsername === senderData.username) {
+      return {
+        status: 'bad-request',
+        message: 'You cannot transfer funds to yourself',
+      };
+    }
+
     if (!receiver)
       return {
         status: 'not-found',

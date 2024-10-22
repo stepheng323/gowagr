@@ -9,11 +9,10 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { convertResponse } from 'src/utils/response';
 import { TransferService } from './transfer.service';
 import { TransferDto } from './dto/transfer.dto';
-import { AuthGuard } from 'src/lib/guard/authGuard';
-import { TransactionQuery } from 'src/types';
+import { AuthGuard } from '../lib/guard/authGuard';
+import { TransactionQuery } from '../types/';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -27,6 +26,7 @@ import {
   TransferHistoryResponseDto,
   TransferResponseDto,
 } from './dto/transfer-response.dto';
+import { convertResponse } from '../utils/response';
 
 @ApiTags('transfer')
 @ApiBearerAuth()
@@ -49,10 +49,10 @@ export class TransferController {
     type: TransferResponseDto,
   })
   async initiateTransfer(
-@Body()
-transferDto: TransferDto, @Res()
-response: Response, p0: globalThis.Request, @Req()
-req: Request,
+    @Body()
+    transferDto: TransferDto,
+    @Res() response: Response,
+    @Req() req: Request,
   ) {
     const user = req.user;
     const result = await this.transferService.transfer(user, transferDto);

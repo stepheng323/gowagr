@@ -43,8 +43,14 @@ To use this project, follow these steps:
 	* `PORT`: The port number for the application to listen on.
 	* `NODE_ENV`: The environment type (e.g., development, production).
 
-4. Start the application using `npm run start`.
-5. Use a tool like Postman or cURL to send HTTP requests to the API endpoints.
+4. Run database migrations using Prisma:
+   ```
+   npx prisma migrate dev
+   ```
+   This command will apply all pending migrations to your database.
+
+5. Start the application using `npm run start`.
+6. Use a tool like Postman or cURL to send HTTP requests to the API endpoints.
 
 ## API Endpoints
 

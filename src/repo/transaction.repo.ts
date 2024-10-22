@@ -3,7 +3,7 @@ import { KyselyService } from '../db/db';
 import { DB, Transaction as TransactionHistory } from '../db/types';
 import { Transaction } from 'kysely';
 import { TransactionData, TransactionQuery } from '../types';
-import { paginate } from 'src/utils/pagination';
+import { paginate } from '../utils/pagination';
 
 @Injectable()
 export class TransactionRepo {

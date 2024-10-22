@@ -37,7 +37,7 @@ export class GlobalExceptionFilter<T> implements ExceptionFilter {
       });
     }
     if (statusCode === HttpStatus.BAD_REQUEST) {
-      response.status(statusCode).send({
+      return response.status(statusCode).send({
         status: false,
         message: 'Bad Request',
         error: error,
