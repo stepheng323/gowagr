@@ -10,7 +10,7 @@ export class TransferDto {
 
   @ApiProperty()
   @IsString()
-  readonly username: string;
+  readonly recieverUsername: string;
 
   @ApiProperty()
   @IsString()

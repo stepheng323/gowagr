@@ -11,8 +11,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Response, Request } from 'express';
-import { convertResponse, unauthorizedResponse } from 'src/utils/response';
-import { AuthGuard } from 'src/lib/guard/authGuard';
+import { convertResponse } from '../utils/response';
 import { LoginDto } from './dto/login.dto';
 import {
   ApiBadRequestResponse,
@@ -33,11 +32,12 @@ import {
   NotAuthorizedResponse,
   NotFoundResponse,
 } from '../dto/baseReponse';
+import { AuthGuard } from '../lib/guard/authGuard';
 
 @ApiTags('users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   @ApiCreatedResponse({

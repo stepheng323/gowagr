@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
+
 import { AuthUser, IServiceHelper, TransactionQuery } from 'src/types';
 import { TransferDto } from './dto/transfer.dto';
 import { TransactionRepo } from '../repo/transaction.repo';
@@ -6,6 +8,7 @@ import { AccountRepo } from '../repo/account.repo';
 import { KyselyService } from '../db/db';
 import { DB } from '../db/types';
 import { UserRepo } from '../repo/userRepo';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class TransferService {
@@ -14,15 +17,28 @@ export class TransferService {
     private transactionRepo: TransactionRepo,
     private accountRepo: AccountRepo,
     private userRepo: UserRepo,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  /**
+   * Initiates a transfer between two users.
+   *
+   * This method attempts to transfer funds from the sender's account to the receiver's account.
+   * It first checks if the receiver exists and if the transfer is not already in progress.
+   * If the sender has sufficient funds, it debits the sender's account and credits the receiver's account.
+   * It then records the transactions for both the sender and receiver.
+   *
+   * @param {AuthUser} senderData - The authenticated user initiating the transfer.
+   * @param {TransferDto} transferDto - The transfer details including amount, receiver username, and optional note.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an object indicating the status of the transfer.
+   */
   async transfer(
     senderData: AuthUser,
     transferDto: TransferDto,
   ): Promise<IServiceHelper> {
     const { amount, note } = transferDto;
     const receiver = await this.userRepo.getUserAccountByUsername(
-      transferDto.username,
+      transferDto.recieverUsername,
     );
 
     if (!receiver)
@@ -32,6 +48,17 @@ export class TransferService {
       };
 
     const transaction = await this.client.transaction().execute(async (trx) => {
+      const cacheKey = `transfer-${senderData.username}-${transferDto.recieverUsername}-${amount}`;
+      const cache = await this.cacheManager.get(cacheKey);
+      if (cache) {
+        return {
+          status: 'bad-request',
+          message: 'Transfer already in progress',
+        };
+      }
+      const ONE_MINUTES_IN_MILLISECONDS = 1 * 60 * 1000;
+      await this.cacheManager.set(cacheKey, true, ONE_MINUTES_IN_MILLISECONDS);
+
       const sender = await this.userRepo.getUserAccountByUsername(
         senderData.username,
       );
@@ -69,7 +96,7 @@ export class TransferService {
       });
 
       //  sender transaction
-      return this.transactionRepo.create({
+      const senderTransaction = await this.transactionRepo.create({
         payload: {
           userId: sender.id,
           amount,
@@ -82,6 +109,10 @@ export class TransferService {
         },
         trx,
       });
+
+      // Purge the cache
+      await this.cacheManager.del(cacheKey);
+      return senderTransaction;
     });
 
     return {
@@ -91,6 +122,13 @@ export class TransferService {
     };
   }
 
+  /**
+   * Fetches the transaction history for a given user based on the provided filter.
+   *
+   * @param {AuthUser} user - The user for whom to fetch the transaction history.
+   * @param {TransactionQuery} filter - The filter criteria for the transaction history.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an IServiceHelper object containing the transaction history.
+   */
   async getTransfers(
     user: AuthUser,
     filter: TransactionQuery,

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UserRepo } from 'src/repo/userRepo';
+import { UserRepo } from '../repo/userRepo';
 import { AuthUser, IServiceHelper } from 'src/types';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -21,6 +21,12 @@ export class UserService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
+  /**
+   * Signs up a new user and creates an account for them.
+   *
+   * @param {CreateUserDto} userPayload - The user's details for signup.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an IServiceHelper object indicating the status of the signup operation.
+   */
   async signup(userPayload: CreateUserDto): Promise<IServiceHelper> {
     const { email, password, username } = userPayload;
     const existingUserByEmail = await this.userRepo.findByEmail(email);
@@ -62,6 +68,12 @@ export class UserService {
     };
   }
 
+  /**
+   * Handles user login and returns a token if credentials are valid.
+   *
+   * @param {LoginDto} payload - The user's email and password for login.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an IServiceHelper object indicating the status of the login operation.
+   */
   async login(payload: LoginDto): Promise<IServiceHelper> {
     const user = await this.userRepo.findByEmail(payload.email);
     if (!user)
@@ -100,12 +112,16 @@ export class UserService {
     };
   }
 
+  /**
+   * Fetches user details including their account balance.
+   *
+   * @param {AuthUser} user - The authenticated user.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an IServiceHelper object containing the user's details and balance.
+   */
   async getUserDetailsWithBalance(user: AuthUser): Promise<IServiceHelper> {
     const cacheKey = `account-balance-${user.id}`;
     let account = await this.cacheManager.get<{ balance: string }>(cacheKey);
     if (!account) {
-      console.log('Cache miss');
-
       account = await this.accountRepo.getAccountBalanceByUserId(user.id);
       if (!account)
         return {
@@ -121,6 +137,12 @@ export class UserService {
     };
   }
 
+  /**
+   * Fetches user details by their username.
+   *
+   * @param {string} username - The username of the user to fetch details for.
+   * @returns {Promise<IServiceHelper>} A promise that resolves to an IServiceHelper object containing the user's details.
+   */
   async getUserDetails(username: string): Promise<IServiceHelper> {
     const userDetails = await this.userRepo.findByUsername(username);
     if (!userDetails)

@@ -49,9 +49,10 @@ export class TransferController {
     type: TransferResponseDto,
   })
   async initiateTransfer(
-    @Body() transferDto: TransferDto,
-    @Res() response: Response,
-    @Req() req: Request,
+@Body()
+transferDto: TransferDto, @Res()
+response: Response, p0: globalThis.Request, @Req()
+req: Request,
   ) {
     const user = req.user;
     const result = await this.transferService.transfer(user, transferDto);
