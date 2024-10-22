@@ -62,7 +62,7 @@ export class UserService {
       });
 
     return {
-      status: 'successful',
+      status: 'created',
       message: 'User signed up successfully',
       data: userWithToken,
     };
