@@ -18,7 +18,7 @@ export class TransferService {
     private accountRepo: AccountRepo,
     private userRepo: UserRepo,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) { }
 
   /**
    * Initiates a transfer between two users.
@@ -63,20 +63,20 @@ export class TransferService {
           message: 'Transfer already in progress',
         };
       }
-      const ONE_MINUTES_IN_MILLISECONDS = 1 * 60 * 1000;
-      await this.cacheManager.set(cacheKey, true, ONE_MINUTES_IN_MILLISECONDS);
-
-      const sender = await this.userRepo.getUserAccountByUsername(
-        senderData.username,
+      // select sender account for update to lock row
+      const senderAccount = await this.accountRepo.getAccountBalanceByUserId(
+        senderData.id,
+        trx,
       );
-      if (Number(sender.balance) < amount)
+
+      if (Number(senderAccount.balance) < amount)
         return {
           status: 'bad-request',
           message: 'Insufficient funds',
         };
 
       const debitedAccount = await this.accountRepo.debitAccount({
-        accountId: sender.accountId,
+        accountId: senderAccount.id,
         amount,
         trx,
       });
@@ -94,7 +94,7 @@ export class TransferService {
           amount,
           balanceAfter: Number(creditedAccount.balance),
           balanceBefore: Number(creditedAccount.balance) - amount,
-          senderAccountId: sender.accountId,
+          senderAccountId: senderAccount.id,
           receiverAccountId: receiver.accountId,
           type: 'credit',
           note,
@@ -103,23 +103,19 @@ export class TransferService {
       });
 
       //  sender transaction
-      const senderTransaction = await this.transactionRepo.create({
+      return this.transactionRepo.create({
         payload: {
-          userId: sender.id,
+          userId: senderData.id,
           amount,
           balanceAfter: Number(debitedAccount.balance),
-          balanceBefore: Number(sender.balance),
-          senderAccountId: sender.accountId,
+          balanceBefore: Number(senderAccount.balance),
+          senderAccountId: senderAccount.id,
           receiverAccountId: receiver.accountId,
           type: 'debit',
           note,
         },
         trx,
       });
-
-      // Purge the cache
-      await this.cacheManager.del(cacheKey);
-      return senderTransaction;
     });
 
     return {

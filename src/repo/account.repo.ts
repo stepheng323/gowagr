@@ -5,7 +5,7 @@ import { sql, Transaction } from 'kysely';
 
 @Injectable()
 export class AccountRepo {
-  constructor(private readonly client: KyselyService<DB>) {}
+  constructor(private readonly client: KyselyService<DB>) { }
 
   async create(userId: string, trx?: Transaction<DB>) {
     const queryBuilder = trx
@@ -54,10 +54,12 @@ export class AccountRepo {
       .executeTakeFirst();
   }
 
-  async getAccountBalanceByUserId(userId: string) {
-    return this.client
-      .selectFrom('Account')
-      .select('balance')
+  async getAccountBalanceByUserId(userId: string, trx?: Transaction<DB>) {
+    const queryBuilder = trx
+      ? trx.selectFrom('Account')
+      : this.client.selectFrom('Account');
+    return queryBuilder
+      .select(['balance', 'id'])
       .forUpdate()
       .where('userId', '=', userId)
       .executeTakeFirst();
